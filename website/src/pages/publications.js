@@ -5,16 +5,16 @@ import styles from './publications.module.css'
 const publications = [
   {
     id: 1,
-    title: "When to Reason: Semantic Router for vLLM",
-    authors: "Chen Wang, Xunzhuo Liu, Yuhan Liu, Yue Zhu, Xiangxi Mo, Junchen Jiang, Huamin Chen",
-    venue: "NeurIPS - MLForSys",
-    year: "2025",
-    abstract: "We propose vLLM semantic router integrated with vLLM that selectively applies reasoning only when beneficial, achieving over 10 percentage point accuracy gains while nearly halving latency and token usage",
+    title: 'When to Reason: Semantic Router for vLLM',
+    authors: 'Chen Wang, Xunzhuo Liu, Yuhan Liu, Yue Zhu, Xiangxi Mo, Junchen Jiang, Huamin Chen',
+    venue: 'NeurIPS - MLForSys',
+    year: '2025',
+    abstract: 'We propose vLLM semantic router integrated with vLLM that selectively applies reasoning only when beneficial, achieving over 10 percentage point accuracy gains while nearly halving latency and token usage',
     links: [
-      { type: "paper", url: "https://mlforsystems.org", label: "📄 Paper" }
+      { type: 'paper', url: 'https://mlforsystems.org', label: '📄 Paper' },
     ],
-    featured: true
-  }
+    featured: true,
+  },
 ]
 
 function PublicationCard({ publication }) {
@@ -22,7 +22,11 @@ function PublicationCard({ publication }) {
     <div className={styles.publicationCard}>
       <h3 className={styles.paperTitle}>{publication.title}</h3>
       <p className={styles.paperAuthors}>{publication.authors}</p>
-      <span className={styles.paperVenue}>{publication.venue} {publication.year}</span>
+      <span className={styles.paperVenue}>
+        {publication.venue}
+        {' '}
+        {publication.year}
+      </span>
       <p className={styles.paperAbstract}>{publication.abstract}</p>
       <div className={styles.paperLinks}>
         {publication.links.map((link, index) => (
@@ -42,8 +46,6 @@ function PublicationCard({ publication }) {
     </div>
   )
 }
-
-
 
 export default function Publications() {
   return (
