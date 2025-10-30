@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-router
+  namespace: vllm-semantic-router-system
+  labels:
+    app: semantic-router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: semantic-router
+  template:
+    metadata:
+      labels:
+        app: semantic-router
+    spec:
+      containers:
+        - name: semantic-router
+          image: ghcr.io/vllm-project/semantic-router/extproc:latest
+          args: [
+            "--secure=false",
+            "--enable-http-gateway=true",
+            "--http-gateway-port=8801"
+          ]
+          ports:
+            - containerPort: 8080
+              name: classify-api
+              protocol: TCP
+            - containerPort: 8801
+              name: http-gateway
+              protocol: TCP
+          env:
+            - name: LD_LIBRARY_PATH
+              value: "/app/lib"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: models-volume
+              mountPath: /app/models
+          # Note: CI overrides readinessProbe via workflow kustomize patch to use HTTP GET /health on port 'classify-api'
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: classify-api
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "3Gi"
+              cpu: "1"
+            limits:
+              memory: "6Gi"
+              cpu: "2"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: semantic-router-config
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: semantic-router-models
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-router
+  namespace: vllm-semantic-router-system
+spec:
+  selector:
+    app: semantic-router
+  ports:
+    - name: http-gateway
+      port: 8801
+      targetPort: http-gateway
+    - name: classify-api
+      port: 8080
+      targetPort: classify-api
+  type: ClusterIP

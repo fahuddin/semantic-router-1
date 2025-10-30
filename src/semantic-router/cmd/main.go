@@ -30,6 +30,8 @@ func main() {
 		enableSystemPromptAPI = flag.Bool("enable-system-prompt-api", false, "Enable system prompt configuration endpoints (SECURITY: only enable in trusted environments)")
 		secure                = flag.Bool("secure", false, "Enable secure gRPC server with TLS")
 		certPath              = flag.String("cert-path", "", "Path to TLS certificate directory (containing tls.crt and tls.key)")
+		enableHTTPGateway     = flag.Bool("enable-http-gateway", false, "Enable the simple HTTP gateway for nginx-only ingress (non-streaming)")
+		httpGatewayPort       = flag.Int("http-gateway-port", 8801, "Port for the HTTP gateway when enabled")
 	)
 	flag.Parse()
 
@@ -147,6 +149,16 @@ func main() {
 			observability.Infof("Starting Classification API server on port %d", *apiPort)
 			if err := api.StartClassificationAPI(*configPath, *apiPort, *enableSystemPromptAPI); err != nil {
 				observability.Errorf("Classification API server error: %v", err)
+			}
+		}()
+	}
+
+	// Start simple HTTP gateway for nginx-only ingress if requested
+	if *enableHTTPGateway {
+		go func() {
+			observability.Infof("Starting simple HTTP gateway on port %d", *httpGatewayPort)
+			if err := extproc.StartHTTPGateway(*configPath, *httpGatewayPort); err != nil {
+				observability.Errorf("HTTP gateway error: %v", err)
 			}
 		}()
 	}
